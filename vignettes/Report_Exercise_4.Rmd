@@ -48,7 +48,7 @@ aggregate(Ozone ~ Month, data = airquality, mean)
 ```
 #The mean ozone concentration for the summer months gives us an idea of the overall air quality during this time. We can calculate the mean ozone concentration for the entire dataset or for each month separately. We can see that the median ozone concentration is highest in summer.
 
-#Figure 1 shows the ozone concentration by month and you can see that the mean ozone concentration is highest in June and July, suggesting that air quality may have been worse during these months. This finding is consistent with our hypothesis that ozone concentrations would be higher in the summer months. However, we also observe several outliers in May and August that could indicate unusual weather conditions or other factors that contributed to higher ozone concentrations in those months.
+#Figure 1 shows the ozone concentration by month and you can see that the mean ozone concentration is highest in June and July, suggesting that air quality may have been worse during these months. This finding is consistent with our expectaion that ozone concentrations would be higher in the summer months. However, we also observe several outliers in May and August that could indicate unusual weather conditions or other factors that contributed to higher ozone concentrations in those months.
 
 
 ```{r}
@@ -65,7 +65,7 @@ ggplot(airquality, aes(x = Temp, y = Ozone)) +
 cor(airquality$Ozone, airquality$Temp, method = "pearson")
 cor.test(airquality$Ozone, airquality$Temp, method = "pearson")
 ```
-#The scatter plot of temperature and ozone concentration (Figure 2) shows a positive correlation between these two variables, confirming our hypothesis that higher temperatures are associated with higher ozone concentrations. The correlation coefficient between temperature and ozone concentration is 0.7, indicating a moderately strong positive correlation. This result is consistent with previous studies that have shown that ozone concentrations tend to increase during periods of hot and sunny weather.
+#The scatter plot of temperature and ozone concentration (Figure 2) shows a positive correlation between these two variables.The correlation coefficient between temperature and ozone concentration is 0.7, indicating a moderately strong positive correlation.This confirms the expectation that ozone concentrations are highest in summer
 
 
 ```{r}
@@ -93,7 +93,7 @@ ggplot(airquality, aes(x = Date, y = Solar.R)) +
 #The time series plot of solar radiation and wind speed (Figure 3) shows that solar radiation gradually increases from May to July, which may have contributed to the higher ozone concentrations during these months. In addition, several spikes in wind speed are observed in June and July, which may have helped disperse pollutants and mitigate the effects of the high ozone concentrations.
 
 
-#In summary, our analysis of the air quality data set provides important insights into the variations in air quality during the summer months in New York City in 1973. Our results indicate that ozone concentrations were higher in June and July, likely due to enhanced photochemical reactions in the atmosphere and higher solar irradiance. We also confirm our hypothesis that higher temperatures are associated with higher ozone concentrations, underscoring the importance of understanding the effects of climate change on air quality. Our analysis underscores the need for continued monitoring and research of air quality and its effects on human health and the environment.
+#In summary, our analysis of the air quality data set provides important insights into the variations in air quality during the summer months. Our results indicate that ozone concentrations were higher in June and July.
 
 
 
