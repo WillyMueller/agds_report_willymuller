@@ -1,0 +1,131 @@
+---
+title: "Report_Exercise_4"
+author: "Willy Müller"
+date: "2023-03-13"
+output: html_document
+---
+#Report_Exercise_4
+
+```{r}
+airquality <- datasets::airquality
+
+```
+
+```{r}
+airquality <- airquality[complete.cases(airquality), ]
+
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(datasets)
+```
+
+#Hyphotesis:
+#Ozone concentration is highest in the summer months. 
+
+
+```{r}
+ggplot(airquality, aes(x = Month, y = Ozone)) + 
+  geom_point() +
+  labs(title = "Ozone Concentration by Month",
+       x = "Month",
+       y = "Ozone Concentration (ppb)")
+```
+
+
+
+```{r}
+ggplot(airquality, aes(x = Temp, y = Ozone)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Scatterplot of Temperature and Ozone",
+       x = "Temperature (F)",
+       y = "Ozone Concentration (ppb)") +
+  geom_smooth(method = "lm", se = FALSE)
+```
+```{r}
+cor(airquality$Ozone, airquality$Temp, method = "pearson")
+cor.test(airquality$Ozone, airquality$Temp, method = "pearson")
+```
+
+#The correlation coefficient between temperature and ozone concentration can give us an idea of the strength and direction of the relationship between these two variables. A positive correlation coefficient suggests that higher temperatures are associated with higher ozone concentrations.
+
+
+```{r}
+airquality <- airquality |>
+  mutate(Date = mdy(paste(Month, Day, "1973", sep = "-")))
+```
+
+```{r}
+
+
+ggplot(airquality, aes(x = Date, y = Solar.R)) + 
+  geom_line(alpha = 0.5) +
+  stat_smooth(method = "loess", span = 0.3, se = FALSE, color = "blue") +
+  labs(title = "Time Series Plot of Solar Radiation and Wind Speed",
+       x = "Date",
+       y = "Solar Radiation (langley) / Windspeed (mph)") +
+  geom_line(aes(x = Date, y = Wind), color = "orange") +
+  labs(color = "Variable") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%m/%d") +
+  theme_classic()
+
+```
+#We can see that solar radiation increases gradually from May to July, and then decreases in August. Wind speed varies throughout the summer, with several spikes in June and July.
+```{r}
+cor(airquality$Solar.R, airquality$Wind, method = "pearson")
+cor.test(airquality$Solar.R, airquality$Wind, method = "pearson")
+```
+
+
+```{r}
+ggplot(airquality, aes(x = Wind, y = Ozone, group = 1)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Scatterplot of Wind and Ozone Concentration",
+       x = "Wind Speed (mph)",
+       y = "Ozone Concentration (ppb)")
+```
+
+
+```{r}
+cor(airquality$Ozone, airquality$Wind, method = "pearson")
+cor.test(airquality$Ozone, airquality$Wind, method = "pearson")
+```
+
+
+#Metric: Mean: The mean ozone concentration for the summer months can give us an idea of the overall air quality during this time. We can calculate the mean ozone concentration for the entire dataset or for each month separately. We can see that the median ozone concentration is highest in summer.
+
+```{r}
+mean(airquality$Ozone)
+aggregate(Ozone ~ Month, data = airquality, mean)
+
+```
+
+
+
+```{r}
+sd(airquality$Ozone)
+aggregate(Ozone ~ Month, data = airquality, sd)
+
+```
+
+#The standard deviation of ozone concentration can give us an idea of the variability in air quality throughout the summer. A higher standard deviation suggests that air quality was more variable throughout the summer.
+
+#Interpretation
+
+#Figure 1 shows the ozone concentration by month and you can see that the mean ozone concentration is highest in June and July, suggesting that air quality may have been worse during these months. This finding is consistent with our hypothesis that ozone concentrations would be higher in the summer months. However, we also observe several outliers in May and August that could indicate unusual weather conditions or other factors that contributed to higher ozone concentrations in those months.
+
+#The scatter plot of temperature and ozone concentration (Figure 2) shows a positive correlation between these two variables, confirming our hypothesis that higher temperatures are associated with higher ozone concentrations. The correlation coefficient between temperature and ozone concentration is 0.7, indicating a moderately strong positive correlation. This result is consistent with previous studies that have shown that ozone concentrations tend to increase during periods of hot and sunny weather.
+
+#The time series plot of solar radiation and wind speed (Figure 3) shows that solar radiation gradually increases from May to July, which may have contributed to the higher ozone concentrations during these months. In addition, several spikes in wind speed are observed in June and July, which may have helped disperse pollutants and mitigate the effects of the high ozone concentrations.
+
+#In summary, our analysis of the air quality data set provides important insights into the variations in air quality during the summer months in New York City in 1973. Our results indicate that ozone concentrations were higher in June and July, likely due to enhanced photochemical reactions in the atmosphere and higher solar irradiance. We also confirm our hypothesis that higher temperatures are associated with higher ozone concentrations, underscoring the importance of understanding the effects of climate change on air quality. Our analysis underscores the need for continued monitoring and research of air quality and its effects on human health and the environment.
+
+
+
+
+
+
