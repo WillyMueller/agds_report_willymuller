@@ -1,0 +1,34 @@
+---
+title: "Report_Exercise_8"
+author: "Willy Müller"
+date: "2023-06-05"
+output: html_document
+---
+
+
+
+
+
+```{r}
+library(readr)
+library(dplyr)
+library(lubridate)
+
+daily_fluxes_1 <- read_csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv") 
+daily_fluxes_2 <- read.csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Lae_FLUXNET2015_FULLSET_DD_2004-2014_1-4.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
