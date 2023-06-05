@@ -1,0 +1,167 @@
+---
+title: "Report_Exercise_6"
+author: "Willy Müller"
+date: "2023-04-17"
+output: html_document
+---
+
+
+```{r}
+library(readr)
+df_for_stepwise_regression <- read_csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/df_for_stepwise_regression.csv")
+View(df_for_stepwise_regression)
+```
+
+#Exercise 1
+
+```{r}
+df_for_stepwise_regression <- df_for_stepwise_regression[, c(names(df_for_stepwise_regression)[names(df_for_stepwise_regression) != "GPP_NT_VUT_REF"], "GPP_NT_VUT_REF")]
+
+```
+
+
+```{r}
+rsquared_list <- list()
+
+for (predictor in names(df_for_stepwise_regression)[1:(ncol(df_for_stepwise_regression)-1)]) {
+  
+  model_1 <- lm(GPP_NT_VUT_REF ~ get(predictor), data = df_for_stepwise_regression)
+  
+  rsquared <- summary(model_1)$r.squared
+  rsquared_list[[predictor]] <- rsquared
+}
+
+best_predictor <- names(rsquared_list)[which.max(unlist(rsquared_list))]
+
+best_model <- lm(GPP_NT_VUT_REF ~ get(best_predictor), data = df_for_stepwise_regression)
+best_aic <- AIC(best_model)
+
+plot(unlist(rsquared_list), xlab = "Predictor Variables", ylab = "R-Squared Values")
+
+```
+
+
+#Exercise 2
+```{r}
+df_for_stepwise_regression <- na.omit(df_for_stepwise_regression)
+```
+
+
+
+```{r}
+set.seed(123)
+train <- sample(1:nrow(df_for_stepwise_regression), 0.7*nrow(df_for_stepwise_regression))
+train_data <- df_for_stepwise_regression[train,]
+test_data <- df_for_stepwise_regression[-train,]
+
+selected_vars <- c()
+
+model <- lm(GPP_NT_VUT_REF ~ 1, data=train_data)
+
+for (var in names(train_data)[-1]) {
+  
+  new_model <- update(model, formula = as.formula(paste("GPP_NT_VUT_REF ~", paste(selected_vars, collapse="+"), "+", var)))
+  
+  if (AIC(new_model) < AIC(model)) {
+    model <- new_model
+    selected_vars <- c(selected_vars, var)
+  }
+}
+
+summary(model)
+selected_vars
+```
+
+
+```{r}
+plot(train_data$TA_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen TA_F und GPP_NT_VUT_REF",
+     xlab = "TA_F", ylab = "GPP_NT_VUT_REF")
+abline(model, col = "red")  
+
+
+```
+
+```{r}
+plot(train_data$SW_IN_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen SW_IN_F und GPP_NT_VUT_REF",
+     xlab = "SW_IN_F", ylab = "GPP_NT_VUT_REF")
+
+```
+
+```{r}
+plot(train_data$LW_IN_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen LW_IN_F und GPP_NT_VUT_REF",
+     xlab = "LW_IN_F", ylab = "GPP_NT_VUT_REF")
+```
+```{r}
+plot(train_data$VPD_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen VPD_F und GPP_NT_VUT_REF",
+     xlab = "VPD_F", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$PA_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen PA_F und GPP_NT_VUT_REF",
+     xlab = "PA_F", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$P_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen P_F und GPP_NT_VUT_REF",
+     xlab = "P_F", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$WS_F, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen WS_F und GPP_NT_VUT_REF",
+     xlab = "WS_F", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$CO2_F_MDS, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen CO2_F_MDS und GPP_NT_VUT_REF",
+     xlab = "CO2_F_MDS", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$PPFD_IN, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen PPFD_IN und GPP_NT_VUT_REF",
+     xlab = "PPFD_IN", ylab = "GPP_NT_VUT_REF")
+```
+
+```{r}
+plot(train_data$USTAR, train_data$GPP_NT_VUT_REF,
+     main = "Beziehung zwischen USTAR und GPP_NT_VUT_REF",
+     xlab = "USTAR", ylab = "GPP_NT_VUT_REF")
+```
+
+#The linear regression model shows a significant relationship between the dependent variable GPP_NT_VUT_REF and the independent variables TIMESTAMP, TA_F, SW_IN_F, LW_IN_F, VPD_F, PA_F, P_F, WS_F, CO2_F_MDS, PPFD_IN, and USTAR.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
