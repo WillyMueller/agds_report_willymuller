@@ -95,7 +95,8 @@ pp <- recipes::recipe(GPP_NT_VUT_REF ~ SW_IN_F + VPD_F + TA_F, data = daily_flux
 ```
 
 ```{r}
-
+library(caret)
+library(recipes)
 caret::train(
   pp, 
   data = daily_fluxes_train, 
@@ -397,9 +398,86 @@ line_plot
 
 #The role of K:
 #1. 
-#k approaching 1: As k approaches 1, the model becomes more sensitive to the noise or variability in the data. With a smaller k, the model considers fewer neighbors to make predictions, resulting in a more flexible and potentially overfitting model. As a consequence: On the training set: The model will have a lower bias because it can capture the local patterns and fluctuations in the data. As a result, the R^2 on the training set will increase, indicating a better fit to the training data. On the test set: Since the model is more sensitive to noise, it may struggle to generalize well to unseen data. The model might perform poorly on the test set, resulting in a lower R^2 and higher MAE compared to the training set. This is due to the increased variance, as the model might fail to capture the underlying patterns in the data. 
+#k approaches 1: As k approaches 1, the model becomes more sensitive to noise or variability in the data. With a smaller k, the model considers fewer neighbors to make predictions, resulting in a more flexible and potentially overfitting model. Results: On the training set: the model is less biased because it captures local patterns and fluctuations in the data. This increases the R^2 value of the training set, indicating a better fit for the training data. As for the test set, since the model is more sensitive to noise, it is difficult to generalize well to unseen data. The model may underperform on the test set, resulting in lower R^2 and higher MAE compared to the training set. This is due to increased variance, as the model may fail to capture underlying patterns in the data.
+
 
 #k approaching N: When k approaches the total number of observations in the data, the model becomes less flexible and more influenced by the overall structure of the data. With a larger k, the model considers a larger number of neighbors and averages their values, leading to a smoother decision boundary. As a consequence: On the training set: The model will have higher bias because it is constrained by a larger number of neighbors. Consequently, the R^2 on the training set might decrease as the model may not capture the local intricacies in the data. On the test set: A larger k helps in reducing the impact of noisy or outlier observations, resulting in improved generalization to unseen data. The model might have a higher R^2 and lower MAE on the test set compared to the training set. This is because the increased bias helps in reducing overfitting and achieving a better balance between bias and variance.
+
+#2.
+
+```{r}
+library(rsample)
+library(caret)
+library(tidyr)
+library(ggplot2)
+```
+
+
+```{r}
+calculate_MAE <- function(k, training_data, testing_data) {
+  set.seed(1982) 
+  
+  pp <- recipe(GPP_NT_VUT_REF ~ SW_IN_F + VPD_F + TA_F, 
+               data = training_data |> drop_na()) |> 
+    step_BoxCox(all_predictors()) |> 
+    step_center(all_numeric(), -all_outcomes()) |>
+    step_scale(all_numeric(), -all_outcomes())
+  
+  mod_knn <- train(
+    pp, 
+    data = training_data |> drop_na(), 
+    method = "knn",
+    trControl = trainControl(method = "none"),
+    tuneGrid = data.frame(k = k),
+    metric = "MAE"
+  )
+  
+  test_predictions <- predict(mod_knn, newdata = testing_data |> drop_na())
+  
+  test_mae <- MAE(test_predictions, testing_data$GPP_NT_VUT_REF |> na.omit())
+  
+  return(test_mae)
+}
+
+```
+
+
+```{r}
+k_values <- seq(1, 50, by = 1)
+
+
+set.seed(123)
+split <- initial_split(daily_fluxes, prop = 0.7, strata = "VPD_F")
+training_data <- training(split)
+testing_data <- testing(split)
+
+mae_results <- sapply(k_values, calculate_MAE, training_data = training_data, testing_data = testing_data)
+
+```
+
+
+
+
+
+#3
+```{r}
+optimal_index <- which.min(mae_results)
+optimal_k <- k_values[optimal_index]
+optimal_mae <- mae_results[optimal_index]
+
+data <- data.frame(k = k_values, MAE = mae_results)
+p <- ggplot(data, aes(x = k, y = MAE)) +
+  geom_point(color = "red") +
+  labs(x = "k (Number of Neighbors)", y = "MAE (Mean Absolute Error)", title = "MAE vs. k") +
+  annotate("text", x = optimal_k + 2, y = optimal_mae + 0.1, label = paste("Optimal k =", optimal_k), color = "green") +
+  scale_x_continuous(breaks = seq(0, 50, by = 10)) +
+  scale_y_continuous(limits = c(1, max(mae_results) + 0.5)) +
+  theme_minimal()
+
+print(p)
+
+```
+
 
 
 

@@ -10,13 +10,112 @@ output: html_document
 
 
 ```{r}
-library(readr)
+library(rsample)
 library(dplyr)
-library(lubridate)
+library(tidyr)
+library(caret)
+library(readr)
 
-daily_fluxes_1 <- read_csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv") 
-daily_fluxes_2 <- read.csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Lae_FLUXNET2015_FULLSET_DD_2004-2014_1-4.csv")
+
+davos <- read_csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv") 
+laegern <- read.csv("C:/Users/Admin/Documents/agds_report_willymuller/Data/FLX_CH-Lae_FLUXNET2015_FULLSET_DD_2004-2014_1-4.csv")
+
 ```
+```{r}
+set.seed(1982)
+davos_split <- initial_split(davos, prop = 0.8)
+davos_train <- training(davos_split)
+davos_test <- testing(davos_split)
+
+set.seed(1982)  
+laegern_split <- initial_split(laegern, prop = 0.8)
+laegern_train <- training(laegern_split)
+laegern_test <- testing(laegern_split)
+```
+
+
+```{r}
+mod_davos <- caret::train(
+  GPP_NT_VUT_REF ~ SW_IN_F + VPD_F + TA_F,
+  data = davos_train,
+  method = "knn",
+  trControl = caret::trainControl(method = "none"),
+  tuneGrid = data.frame(k = 1),
+  metric = "MAE"
+)
+
+mod_laegern <- caret::train(
+  GPP_NT_VUT_REF ~ SW_IN_F + VPD_F + TA_F,
+  data = laegern_train,
+  method = "knn",
+  trControl = caret::trainControl(method = "none"),
+  tuneGrid = data.frame(k = 1),
+  metric = "MAE"
+)
+
+davos_preds_within <- predict(mod_davos, newdata = davos_test)
+laegern_preds_within <- predict(mod_laegern, newdata = laegern_test)
+
+davos_preds_across <- predict(mod_davos, newdata = laegern_test)
+laegern_preds_across <- predict(mod_laegern, newdata = davos_test)
+
+metrics_within <- function(pred, actual) {
+  mae <- mean(abs(pred - actual))
+  rmse <- sqrt(mean((pred - actual)^2))
+  r2 <- caret::R2(pred, actual)
+  return(list(mae = mae, rmse = rmse, r2 = r2))
+}
+
+davos_metrics_within <- metrics_within(davos_preds_within, davos_test$GPP_NT_VUT_REF)
+laegern_metrics_within <- metrics_within(laegern_preds_within, laegern_test$GPP_NT_VUT_REF)
+
+metrics_across <- function(pred, actual) {
+  mae <- mean(abs(pred - actual))
+  rmse <- sqrt(mean((pred - actual)^2))
+  r2 <- caret::R2(pred, actual)
+  return(list(mae = mae, rmse = rmse, r2 = r2))
+}
+
+davos_metrics_across <- metrics_across(davos_preds_across, laegern_test$GPP_NT_VUT_REF)
+laegern_metrics_across <- metrics_across(laegern_preds_across, davos_test$GPP_NT_VUT_REF)
+
+cat("Within-site predictions - Davos:\n")
+cat("MAE:", davos_metrics_within$mae, "\n")
+cat("RMSE:", davos_metrics_within$rmse, "\n")
+cat("R-squared:", davos_metrics_within$r2, "\n")
+
+cat("\nWithin-site predictions - Laegern:\n")
+cat("MAE:", laegern_metrics_within$mae, "\n")
+cat("RMSE:", laegern_metrics_within$rmse, "\n")
+cat("R-squared:", laegern_metrics_within$r2, "\n")
+
+cat("\nAcross-site predictions - Davos:\n")
+cat("MAE:", davos_metrics_across$mae, "\n")
+cat("RMSE:", davos_metrics_across$rmse, "\n")
+cat("R-squared:", davos_metrics_across$r2, "\n")
+
+cat("\nAcross-site predictions - Laegern:\n")
+cat("MAE:", laegern_metrics_across$mae, "\n")
+cat("RMSE:", laegern_metrics_across$rmse, "\n")
+cat("R-squared:", laegern_metrics_across$r2, "\n")
+
+```
+
+#Within-Site Predictions:
+#The MAE and RMSE values for Davos (MAE: 1.432683, RMSE: 1.908078) are lower than those for Laegern (MAE: 2.578398, RMSE: 3.446785), indicating that the model performs better in predicting GPP  for the Davos site.
+#The R-squared values for both sites indicate moderate to good model fit, with Davos having a higher R-squared value (0.5738439) compared to Laegern (0.450199).
+
+
+#Across-Site Predictions:
+#The MAE and RMSE values for both Davos (MAE: 2.812392, RMSE: 3.608857) and Laegern (MAE: 2.681038, RMSE: 3.418387) are higher than the within-site predictions, suggesting that the models struggle to generalize well when predicting GPP across different sites.
+#The R-squared values for both sites indicate a weaker model fit compared to within-site predictions, with Davos having a slightly higher R-squared value (0.4022021) compared to Laegern (0.2871969).
+
+#In summary, while training separate models for each site can capture site-specific relationships and result in better within-site predictions, the lower performance of the models for across-site predictions suggests limitations in generalization.
+
+
+
+
+
 
 
 
